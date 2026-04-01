@@ -130,6 +130,7 @@ export function adaptSandboxEntry(
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- StandardRouteEntry.input is intentionally loosely typed; callers validate at runtime
 				input: routeEntry.input as PluginRoute["input"],
 				public: routeEntry.public,
+				mcp: routeEntry.mcp,
 				handler: async (ctx) => {
 					// Build the routeCtx shape that standard handlers expect
 					const routeCtx = {

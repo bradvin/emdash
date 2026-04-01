@@ -241,6 +241,7 @@ export type {
 	StandardHookEntry,
 	StandardRouteHandler,
 	StandardRouteEntry,
+	PluginRouteMcpConfig,
 
 	// Sandbox types
 	SandboxRunner,

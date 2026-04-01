@@ -165,6 +165,7 @@ export type {
 
 	// Route types
 	PluginRoute,
+	PluginRouteMcpConfig,
 	RouteContext,
 
 	// Admin types

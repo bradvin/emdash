@@ -964,6 +964,23 @@ export interface RouteContext<TInput = unknown> extends PluginContext {
 /**
  * Route definition
  */
+export interface PluginRouteMcpConfig {
+	/** Whether this route should be exposed as an MCP tool */
+	enabled: boolean;
+	/** Stable MCP tool name (e.g. "seo_keywords_list_for_content") */
+	name: string;
+	/** Human-readable title */
+	title: string;
+	/** Tool description shown to MCP clients */
+	description: string;
+	/** Whether the tool is read-only */
+	readOnlyHint?: boolean;
+	/** Optional token scope required to call the tool */
+	scope?: string;
+	/** Optional minimum RBAC role required to call the tool */
+	minRole?: RoleLevel;
+}
+
 export interface PluginRoute<TInput = unknown> {
 	/** Zod schema for input validation */
 	input?: z.ZodType<TInput>;
@@ -972,6 +989,8 @@ export interface PluginRoute<TInput = unknown> {
 	 * Public routes skip session/token auth and CSRF checks.
 	 */
 	public?: boolean;
+	/** Optional MCP exposure metadata for this route */
+	mcp?: PluginRouteMcpConfig;
 	/** Route handler */
 	handler: (ctx: RouteContext<TInput>) => Promise<unknown>;
 }
@@ -1217,6 +1236,7 @@ export interface StandardRouteEntry {
 	handler: StandardRouteHandler;
 	input?: unknown;
 	public?: boolean;
+	mcp?: PluginRouteMcpConfig;
 }
 
 /**
