@@ -192,7 +192,7 @@ function extractContentId(data: unknown): string | undefined {
 // Server factory
 // ---------------------------------------------------------------------------
 
-export function createMcpServer(): McpServer {
+export function createMcpServer(pluginAwareEmdash?: EmDashHandlers): McpServer {
 	const server = new McpServer(
 		{ name: "emdash", version: "0.1.0" },
 		{ capabilities: { logging: {} } },
@@ -1458,6 +1458,25 @@ export function createMcpServer(): McpServer {
 			return unwrap(await emdash.handleRevisionRestore(args.revisionId, userId));
 		},
 	);
+
+
+	for (const pluginTool of pluginAwareEmdash?.getPluginMcpTools?.() ?? []) {
+		server.registerTool(
+			pluginTool.name,
+			{
+				title: pluginTool.title,
+				description: pluginTool.description,
+				inputSchema: pluginTool.inputSchema ?? z.object({}).passthrough(),
+				annotations: pluginTool.readOnlyHint ? { readOnlyHint: true } : undefined,
+			},
+			async (args, extra) => {
+				if (pluginTool.scope) requireScope(extra, pluginTool.scope);
+				if (pluginTool.minRole) requireRole(extra, pluginTool.minRole);
+				const ec = getEmDash(extra);
+				return unwrap(await ec.invokePluginMcpTool(pluginTool.pluginId, pluginTool.routeName, args));
+			},
+		);
+	}
 
 	return server;
 }

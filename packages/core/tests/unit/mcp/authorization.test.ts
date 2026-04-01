@@ -227,7 +227,7 @@ async function setupMcpPair(opts: {
 	tokenScopes?: string[];
 }): Promise<{ client: Client; cleanup: () => Promise<void> }> {
 	const handlers = opts.handlers ?? createMockHandlers();
-	const server = createMcpServer();
+	const server = createMcpServer(handlers);
 	const [clientTransport, serverTransport] = createAuthenticatedPair({
 		emdash: handlers,
 		userId: opts.userId,
