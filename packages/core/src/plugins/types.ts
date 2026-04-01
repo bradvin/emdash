@@ -979,6 +979,8 @@ export interface PluginRouteMcpConfig {
 	scope?: string;
 	/** Optional minimum RBAC role required to call the tool */
 	minRole?: RoleLevel;
+	/** Optional input schema used for MCP registration (defaults to route input schema) */
+	inputSchema?: z.ZodType<unknown>;
 }
 
 export interface PluginRoute<TInput = unknown> {

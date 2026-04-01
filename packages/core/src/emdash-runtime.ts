@@ -1773,6 +1773,77 @@ export class EmDashRuntime {
 		return null;
 	}
 
+	getPluginMcpTools() {
+		const tools: Array<{
+			pluginId: string;
+			routeName: string;
+			name: string;
+			title: string;
+			description: string;
+			readOnlyHint?: boolean;
+			scope?: string;
+			minRole?: import("@emdash-cms/auth").RoleLevel;
+			inputSchema?: import("zod").ZodType<unknown>;
+		}> = [];
+
+		for (const plugin of this.configuredPlugins) {
+			if (!this.enabledPlugins.has(plugin.id)) continue;
+			for (const [routeName, route] of Object.entries(plugin.routes)) {
+				if (!route.mcp?.enabled) continue;
+				tools.push({
+					pluginId: plugin.id,
+					routeName,
+					name: route.mcp.name,
+					title: route.mcp.title,
+					description: route.mcp.description,
+					readOnlyHint: route.mcp.readOnlyHint,
+					scope: route.mcp.scope,
+					minRole: route.mcp.minRole,
+					inputSchema: route.mcp.inputSchema ?? route.input,
+				});
+			}
+		}
+
+		return tools;
+	}
+
+	async invokePluginMcpTool(pluginId: string, routeName: string, input?: unknown) {
+		if (!this.isPluginEnabled(pluginId)) {
+			return {
+				success: false,
+				error: { code: "NOT_FOUND", message: `Plugin not enabled: ${pluginId}` },
+			};
+		}
+
+		const trustedPlugin = this.configuredPlugins.find((p) => p.id === pluginId);
+		if (!trustedPlugin || !this.enabledPlugins.has(trustedPlugin.id)) {
+			return {
+				success: false,
+				error: { code: "NOT_FOUND", message: `Plugin not found: ${pluginId}` },
+			};
+		}
+
+		const route = trustedPlugin.routes[routeName];
+		if (!route?.mcp?.enabled) {
+			return {
+				success: false,
+				error: {
+					code: "ROUTE_NOT_FOUND",
+					message: `MCP tool route not found: ${pluginId}/${routeName}`,
+				},
+			};
+		}
+
+		const routeRegistry = new PluginRouteRegistry({ db: this.db });
+		routeRegistry.register(trustedPlugin);
+		const request = new Request(`http://emdash.local/_emdash/api/plugins/${pluginId}/${routeName}`, {
+			method: "POST",
+			headers: { "content-type": "application/json", "x-emdash-request": "1" },
+			body: input === undefined ? undefined : JSON.stringify(input),
+		});
+		return routeRegistry.invoke(pluginId, routeName, { request, body: input });
+	}
+
 	async handlePluginApiRoute(pluginId: string, _method: string, path: string, request: Request) {
 		if (!this.isPluginEnabled(pluginId)) {
 			return {

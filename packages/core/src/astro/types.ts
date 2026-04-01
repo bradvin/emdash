@@ -306,6 +306,22 @@ export interface EmDashHandlers {
 
 	// Plugin route metadata (for auth decisions before dispatch)
 	getPluginRouteMeta: (pluginId: string, path: string) => { public: boolean } | null;
+	getPluginMcpTools: () => Array<{
+		pluginId: string;
+		routeName: string;
+		name: string;
+		title: string;
+		description: string;
+		readOnlyHint?: boolean;
+		scope?: string;
+		minRole?: import("@emdash-cms/auth").RoleLevel;
+		inputSchema?: import("zod").ZodType<unknown>;
+	}>;
+	invokePluginMcpTool: (
+		pluginId: string,
+		routeName: string,
+		input?: unknown,
+	) => Promise<HandlerResponse>;
 
 	// Media provider handlers
 	getMediaProvider: (providerId: string) => import("../media/types.js").MediaProvider | undefined;
